@@ -111,6 +111,25 @@ def lambda_handler(event, context):
 
 
 
+import json
 
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n ** 0.5) + 1):
+        if n % i == 0:
+            return False
+    return True
+
+def lambda_handler(event, context):
+    number = event['number']
+    result = "Prime" if is_prime(number) else "Not Prime"
+    
+    data = {
+        "number": number,
+        "result": result
+    }
+    
+    return json.dumps(data)
 
 
