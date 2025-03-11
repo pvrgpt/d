@@ -96,6 +96,18 @@ def lambda_handler(event, context):
     return json.dumps(data)
 
 
+import json
+
+def lambda_handler(event, context):
+    number = event['number']
+    result = "Even" if number % 2 == 0 else "Odd"
+    
+    data = {
+        "number": number,
+        "result": result
+    }
+    
+    return json.dumps(data)
 
 
 
