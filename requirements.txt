@@ -1,0 +1,104 @@
+Docker Pull: 
+1.Python:
+Pull Cmd: Docker pull python
+Execution: Docker run -it python
+
+
+2.Ubuntu:
+Pull Cmd: Docker pull ubuntu
+Execution: docker run -it ubuntu
+
+
+3.MySQL:
+Pull Cmd: docker pull mysql
+Execution: docker run --name mysql-xyz -e MYSQL_ROOT_PASSWORD=sar -d mysql:latest
+	     Docker exec -it mysql-xyz bash
+
+4.Mongo:
+Pull Cmd: docker pull mongo 
+Execution: docker run --name mongo-xyz -d -p 27017:27017 mongo
+	     Docker exec -it mongo-sar mongosh
+
+
+
+
+
+
+
+
+
+
+
+Docker push:
+1)Python (create a folder named python on dsktp)
+Create app.py, dockerfile, requirements.txt(empty)
+App.py:
+print("Hello")
+Docker file:
+FROM python:3.9
+WORKDIR /app
+COPY . /app
+RUN pip install --no-cache-dir -r requirements.txt
+CMD ["python","app.py"]
+
+
+In terminal:
+Docker build -t python .
+Docker tag python dkrusrnme/python
+Docker push dkrusrnme/python
+Docker run dkrusrnme/python
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Node wale:
+1)	Create folder named reactapp
+2)	Open in vscode 
+3)	Create Dockerfile in my-vite-app
+4)	FROM node:18-alpine
+5)	WORKDIR /app
+6)	COPY package*.json ./
+7)	RUN npm install
+8)	COPY . .
+9)	EXPOSE 5173
+10)	CMD ["npm","run","dev","--","--host","0.0.0.0"]11)	
+
+TERMINAL COMMANDS:
+1)	Npm create vite@latest my-vite-app –template react
+2)	Select react n javascript
+3)	Cd my-vite-app
+4)	Npm install
+5)	Npm run dev
+6)	Docker build -t my-vite-app .
+7)	Docker tag my-vite-app dkrusrnme/my-vite-app
+8)	Docker push dkrusrnm/my-vite-app
+
+Lambda Code:
+import json
+
+def lambda_handler(event, context):
+    length=event['length']
+    width=event['width']
+    area=length*width
+    data={
+        "area":area
+    }
+    return json.dumps(data)
+
+
+
+
+
+
+
+
