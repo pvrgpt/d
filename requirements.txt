@@ -82,3 +82,25 @@ OverallStats = FOREACH ALL1 GENERATE
     MIN(A.percentage) AS overall_min,
     MAX(A.percentage) AS overall_max,
     SUM(A.percentage) AS overall_sum;
+
+
+MongoDB:
+db.employees.aggregate([{ $group: { _id: null, maxSalary: { $max: "$salary" } } }])
+db.employees.aggregate([{ $group: { _id: null, sumSalary: { $sum: "$salary" } } }])
+db.employees.aggregate([{ $group: { _id: "Taplu", maxSalary: { $max: "$salary" } } }])
+db.employees.aggregate([{ $group: { _id: "$name", maxSalary: { $max: "$salary" } } }])
+db.employees.aggregate([
+  { $match: { name: "Taplu" } },
+  { $group: { _id: "Taplu", maxSalary: { $max: "$salary" } } }
+])
+db.employees.aggregate([
+  { $match: { "address.city": "Mumbai" } },
+  { $group: { _id: null, avgSalary: { $avg: "$salary" } } }
+])
+db.employees.aggregate([
+  { $match: { skills: { $in: ["JavaScript", "Java"] } } },
+  { $group: { _id: null, avgSalary: { $avg: "$salary" } } }
+])
+
+
+
