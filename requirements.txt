@@ -60,3 +60,25 @@ public class WordCount {
 
 javac -classpath hadoop-core-1.2.1.jar -d WordCount WordCount.java
 jar -cvf WordCount.jar -C WordCount/ .
+
+
+Pig:
+A = LOAD '/pigdir/class.csv' USING PigStorage(',') AS (uid:chararray, name:chararray, class:chararray, percentage:float);
+
+D = GROUP A BY class;
+C = FOREACH D GENERATE group AS class, COUNT(A) AS student_count;
+F = FOREACH D GENERATE CONCAT((chararray)group, CONCAT(',', (chararray)AVG(A.percentage)));
+ALL1 = GROUP A ALL;
+avg1 = FOREACH ALL1 GENERATE AVG(A.percentage) AS overall_avg;
+
+ClassAggregates = FOREACH D GENERATE 
+    group AS class, 
+    MIN(A.percentage) AS min_percentage, 
+    MAX(A.percentage) AS max_percentage, 
+    AVG(A.percentage) AS avg_percentage, 
+    SUM(A.percentage) AS sum_percentage;
+
+OverallStats = FOREACH ALL1 GENERATE 
+    MIN(A.percentage) AS overall_min,
+    MAX(A.percentage) AS overall_max,
+    SUM(A.percentage) AS overall_sum;
