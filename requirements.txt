@@ -1,135 +1,62 @@
-Docker Pull: 
-1.Python:
-Pull Cmd: Docker pull python
-Execution: Docker run -it python
+import java.io.IOException;
+import java.util.StringTokenizer;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 
-2.Ubuntu:
-Pull Cmd: Docker pull ubuntu
-Execution: docker run -it ubuntu
+public class WordCount {
+    public static class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable> {
+        private final static IntWritable one = new IntWritable(1);
+        private Text word = new Text();
 
 
-3.MySQL:
-Pull Cmd: docker pull mysql
-Execution: docker run --name mysql-xyz -e MYSQL_ROOT_PASSWORD=sar -d mysql:latest
-	     Docker exec -it mysql-xyz bash
-
-4.Mongo:
-Pull Cmd: docker pull mongo 
-Execution: docker run --name mongo-xyz -d -p 27017:27017 mongo
-	     Docker exec -it mongo-sar mongosh
-
-
-
-
-
-
-
-
-
-
-
-Docker push:
-1)Python (create a folder named python on dsktp)
-Create app.py, dockerfile, requirements.txt(empty)
-App.py:
-print("Hello")
-Docker file:
-FROM python:3.9
-WORKDIR /app
-COPY . /app
-RUN pip install --no-cache-dir -r requirements.txt
-CMD ["python","app.py"]
-
-
-In terminal:
-Docker build -t python .
-Docker tag python dkrusrnme/python
-Docker push dkrusrnme/python
-Docker run dkrusrnme/python
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Node wale:
-1)	Create folder named reactapp
-2)	Open in vscode 
-3)	Create Dockerfile in my-vite-app
-4)	FROM node:18-alpine
-5)	WORKDIR /app
-6)	COPY package*.json ./
-7)	RUN npm install
-8)	COPY . .
-9)	EXPOSE 5173
-10)	CMD ["npm","run","dev","--","--host","0.0.0.0"]11)	
-
-TERMINAL COMMANDS:
-1)	Npm create vite@latest my-vite-app –template react
-2)	Select react n javascript
-3)	Cd my-vite-app
-4)	Npm install
-5)	Npm run dev
-6)	Docker build -t my-vite-app .
-7)	Docker tag my-vite-app dkrusrnme/my-vite-app
-8)	Docker push dkrusrnm/my-vite-app
-
-Lambda Code:
-import json
-
-def lambda_handler(event, context):
-    length=event['length']
-    width=event['width']
-    area=length*width
-    data={
-        "area":area
+        public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+            StringTokenizer tokenizer = new StringTokenizer(value.toString());
+            while (tokenizer.hasMoreTokens()) {
+                word.set(tokenizer.nextToken());
+                context.write(word, one);
+            }
+        }
     }
-    return json.dumps(data)
 
 
-import json
+    public static class IntSumReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+        private IntWritable result = new IntWritable();
 
-def lambda_handler(event, context):
-    number = event['number']
-    result = "Even" if number % 2 == 0 else "Odd"
-    
-    data = {
-        "number": number,
-        "result": result
+
+        public void reduce(Text key, Iterable<IntWritable> values, Context context)
+                throws IOException, InterruptedException {
+            int sum = 0;
+            for (IntWritable val : values) {
+                sum += val.get();
+            }
+            result.set(sum);
+            context.write(key, result);
+        }
     }
-    
-    return json.dumps(data)
 
 
-
-import json
-
-def is_prime(n):
-    if n < 2:
-        return False
-    for i in range(2, int(n ** 0.5) + 1):
-        if n % i == 0:
-            return False
-    return True
-
-def lambda_handler(event, context):
-    number = event['number']
-    result = "Prime" if is_prime(number) else "Not Prime"
-    
-    data = {
-        "number": number,
-        "result": result
+    public static void main(String[] args) throws Exception {
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf, "word count");
+        job.setJarByClass(WordCount.class);
+        job.setMapperClass(TokenizerMapper.class);
+        job.setCombinerClass(IntSumReducer.class);
+        job.setReducerClass(IntSumReducer.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
     }
-    
-    return json.dumps(data)
+}
 
-
+javac -classpath hadoop-core-1.2.1.jar -d WordCount WordCount.java
+jar -cvf WordCount.jar -C WordCount/ .
